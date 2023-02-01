@@ -5,18 +5,18 @@ import bcrypt from "bcrypt";
 
 export const updateUser = async (req, res, next) => {
   if (req.body.userId === req.params.id) {
-    const user = await User.findById(req.params.id);
     if (req.body.password) {
       const salt = await bcrypt.genSalt(10);
       req.body.password = await bcrypt.hash(req.body.password, salt);
     }
     try {
-      await Post.updateMany(
-        { username: user.username },
-        { $set: req.body.username }
-      );
+      const user = await User.findById(req.params.id);
 
       try {
+        await Post.updateMany(
+          { username: user.username },
+          { $set: { username: req.body.username } }
+        );
         const updateduser = await User.findByIdAndUpdate(
           req.params.id,
           { $set: req.body },
@@ -28,7 +28,7 @@ export const updateUser = async (req, res, next) => {
         next(err);
       }
     } catch (err) {
-      next(err);
+      res.status(404).json("User not found");
     }
   } else {
     res.status(401).json("You can update only your account");
