@@ -11,18 +11,22 @@ export const updateUser = async (req, res, next) => {
       req.body.password = await bcrypt.hash(req.body.password, salt);
     }
     try {
-      const updateduser = await User.findByIdAndUpdate(
-        req.params.id,
-        { $set: req.body },
-        { new: true }
-      );
-
       await Post.updateMany(
         { username: user.username },
         { $set: req.body.username }
       );
 
-      res.status(200).json(updateduser);
+      try {
+        const updateduser = await User.findByIdAndUpdate(
+          req.params.id,
+          { $set: req.body },
+          { new: true }
+        );
+
+        res.status(200).json(updateduser);
+      } catch (err) {
+        next(err);
+      }
     } catch (err) {
       next(err);
     }
