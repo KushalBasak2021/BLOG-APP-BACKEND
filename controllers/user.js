@@ -5,6 +5,7 @@ import bcrypt from "bcrypt";
 
 export const updateUser = async (req, res, next) => {
   if (req.body.userId === req.params.id) {
+    const user = await User.findById(req.params.id);
     if (req.body.password) {
       const salt = await bcrypt.genSalt(10);
       req.body.password = await bcrypt.hash(req.body.password, salt);
@@ -14,6 +15,11 @@ export const updateUser = async (req, res, next) => {
         req.params.id,
         { $set: req.body },
         { new: true }
+      );
+
+      await Post.updateMany(
+        { username: user.username },
+        { $set: req.body.username }
       );
 
       res.status(200).json(updateduser);
